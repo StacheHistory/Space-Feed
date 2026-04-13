@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Investing with SPACE — Mission Control</title>
+<style>
+:root {
+  --bg:#090b12; --bg2:#101522; --bg3:#171d2d; --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.18);
+  --text:#eef2ff; --muted:#9aa6c6; --green:#22c55e; --yellow:#fbbf24; --orange:#f97316; --blue:#60a5fa; --purple:#8b5cf6; --red:#ef4444;
+}
+*{box-sizing:border-box} body{margin:0;background:
+radial-gradient(circle at 20% 0%, rgba(59,130,246,.12), transparent 26%),
+radial-gradient(circle at 80% 10%, rgba(139,92,246,.12), transparent 22%), var(--bg); color:var(--text); font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}
+.app{max-width:1540px;margin:0 auto;padding:22px}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line2)}
+.title{font-size:30px;font-weight:800} .sub{color:var(--muted);margin-top:6px}
+.livepill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line2);padding:8px 12px;border-radius:999px;background:rgba(34,197,94,.08)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{background:var(--bg2);color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:10px 14px;cursor:pointer}
+button:hover,.btn:hover{background:var(--bg3)}
+.btn-primary{background:var(--text);color:#09111f;font-weight:700}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);color:var(--muted);cursor:pointer}
+.tab.active{background:var(--text);color:#0a0f19;border-color:var(--text);font-weight:700}
+.panel{display:none} .panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.card h3{margin:0 0 10px 0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.col-3{grid-column:span 3} .col-4{grid-column:span 4} .col-5{grid-column:span 5} .col-6{grid-column:span 6} .col-7{grid-column:span 7} .col-8{grid-column:span 8} .col-12{grid-column:span 12}
+@media(max-width:980px){.col-3,.col-4,.col-5,.col-6,.col-7,.col-8,.col-12{grid-column:span 12}}
+.stat{font-size:34px;font-weight:800;line-height:1}
+.kicker{color:var(--muted);font-size:12px;margin-top:6px}
+.small{font-size:12px;color:var(--muted)}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.03)}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.badge-green{background:rgba(34,197,94,.14);color:#bdf9c8} .badge-yellow{background:rgba(251,191,36,.14);color:#ffe6a2}
+.badge-orange{background:rgba(249,115,22,.14);color:#ffd2b1} .badge-blue{background:rgba(96,165,250,.14);color:#d1e7ff}
+.badge-purple{background:rgba(139,92,246,.14);color:#e4d7ff} .badge-red{background:rgba(239,68,68,.14);color:#ffcaca}
+.quotegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px} @media(max-width:920px){.quotegrid{grid-template-columns:repeat(2,1fr)}} @media(max-width:620px){.quotegrid{grid-template-columns:1fr}}
+.quote{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.ticker{font-size:12px;color:var(--muted);text-transform:uppercase} .price{font-size:28px;font-weight:800;margin-top:4px}
+.rings{display:grid;grid-template-columns:repeat(4,1fr);gap:14px} @media(max-width:1100px){.rings{grid-template-columns:1fr 1fr}} @media(max-width:720px){.rings{grid-template-columns:1fr}}
+.ring{background:radial-gradient(circle at top, rgba(255,255,255,.05), rgba(255,255,255,.01));border:1px solid var(--line2);border-radius:18px;padding:16px}
+.progress{height:10px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin:12px 0 10px} .fill{height:100%;display:block;border-radius:999px}
+.member{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)} .member:first-of-type{border-top:none}
+.member strong{display:block} .member span{font-size:12px;color:var(--muted)}
+.orbitwrap{display:grid;place-items:center;min-height:430px}
+.orbit{position:relative;width:560px;height:560px;max-width:100%}
+.circle{position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.16)}
+.sun{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:116px;height:116px;border-radius:50%;display:grid;place-items:center;text-align:center;font-weight:800;color:#1f1400;background:radial-gradient(circle at 35% 35%, #fff3b6, #ffcf4d 48%, #de9200);box-shadow:0 0 50px rgba(255,202,46,.34)}
+.label{position:absolute;min-width:140px;padding:10px 12px;background:rgba(9,15,30,.92);border:1px solid var(--line2);border-radius:12px;font-size:12px}
+.heat.green{background:rgba(34,197,94,.14);color:#c4ffd2} .heat.yellow{background:rgba(251,191,36,.14);color:#ffe6a2} .heat.orange{background:rgba(249,115,22,.14);color:#ffd2b1} .heat.blue{background:rgba(96,165,250,.14);color:#d1e7ff}
+.heat{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;display:inline-block;min-width:96px;text-align:center}
+.step{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;margin-top:8px}
+.config{display:grid;gap:10px} .config label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px} .config input,.config select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line2);background:var(--bg2);color:var(--text)}
+.note{padding:12px;border-left:3px solid var(--blue);background:rgba(96,165,250,.08);border-radius:10px;color:#d7e7ff}
+.footer{margin-top:18px;color:var(--muted);font-size:12px}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(255,255,255,.04);padding:2px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="title">Investing with SPACE — Mission Control</div>
+      <div class="sub">Whole-market view with solar-system rings, completion logic, public heat map, buy ladders, live-ready API hooks, private watchlist, and ecosystem expansion.</div>
+    </div>
+    <div class="actions">
+      <div class="livepill"><span class="dot"></span><span id="statusText">Demo baseline loaded · April 12, 2026</span></div>
+      <button onclick="refreshDashboard()">Refresh</button>
+      <button class="btn-primary" onclick="saveConfig()">Save Live Config</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('overview', this)">Overview</button>
+    <button class="tab" onclick="showPanel('solar', this)">Solar System</button>
+    <button class="tab" onclick="showPanel('portfolio', this)">Portfolio</button>
+    <button class="tab" onclick="showPanel('addtrade', this)">Add Trade</button>
+    <button class="tab" onclick="showPanel('heat', this)">Heat Map</button>
+    <button class="tab" onclick="showPanel('ladders', this)">Buy Ladders</button>
+    <button class="tab" onclick="showPanel('triggers', this)">Triggers</button>
+    <button class="tab" onclick="showPanel('private', this)">Private Watch</button>
+    <button class="tab" onclick="showPanel('ecosystem', this)">Ecosystem</button>
+    <button class="tab" onclick="showPanel('live', this)">Live Setup</button>
+    <button class="tab" onclick="showPanel('settings', this)">Settings</button>
+  </div>
+
+  <section id="overview" class="panel active">
+    <div class="grid">
+      <div class="card col-3"><h3>Core Completion</h3><div class="stat">32%</div><div class="kicker">The Sun still needs the most work.</div></div>
+      <div class="card col-3"><h3>Primary Build Zone</h3><div class="stat" style="font-size:24px;color:#c4ffd2">RDW · PL · BKSY</div><div class="kicker">Current quiet-strength names.</div></div>
+      <div class="card col-3"><h3>Most Extended</h3><div class="stat" style="font-size:24px;color:#ffd2b1">ASTS</div><div class="kicker">High upside, but patience matters.</div></div>
+      <div class="card col-3"><h3>Recommended Stack</h3><div class="stat" style="font-size:22px">Static HTML + serverless API proxy</div><div class="kicker">Best way to protect keys and enable refresh.</div></div>
+      <div class="card col-7"><h3>Quote Baseline</h3><div class="quotegrid" id="quotes"></div></div>
+      <div class="card col-5">
+        <h3>Mission Rules</h3>
+        <div class="small">1. Build the Sun first.<br>2. Expand outward only when thresholds unlock.<br>3. Buy fear, not hype.<br>4. Never neglect an inner ring to chase an outer ring.</div>
+        <div style="height:12px"></div>
+        <div class="note">This version is <strong>live-ready</strong>: once you connect quote and news endpoints, the refresh button can update prices, news, trigger cards, and heat-map notes without changing the dashboard layout.</div>
+      </div>
+      <div class="card col-12"><h3>Ring Completion Snapshot</h3><div class="rings" id="rings"></div></div>
+    </div>
+  </section>
+
+  <section id="solar" class="panel">
+    <div class="grid">
+      <div class="card col-6 orbitwrap">
+        <div class="orbit">
+          <div class="circle" style="width:180px;height:180px;left:190px;top:190px;border-color:rgba(255,204,51,.42)"></div>
+          <div class="circle" style="width:290px;height:290px;left:135px;top:135px;border-color:rgba(96,165,250,.34)"></div>
+          <div class="circle" style="width:400px;height:400px;left:80px;top:80px;border-color:rgba(34,197,94,.30)"></div>
+          <div class="circle" style="width:510px;height:510px;left:25px;top:25px;border-color:rgba(139,92,246,.28)"></div>
+          <div class="sun">SUN<br>RKLB<br>ASTS<br>RDW</div>
+          <div class="label" style="right:14px;top:102px"><strong>Ring 2</strong>IRDM · PL</div>
+          <div class="label" style="left:8px;top:248px"><strong>Ring 3</strong>BKSY · LUNR · VSAT</div>
+          <div class="label" style="left:56px;top:44px"><strong>Ring 4</strong>HON · LMT · NOC · RTX · LHX · BWXT</div>
+          <div class="label" style="right:28px;bottom:78px"><strong>Unlock logic</strong>Build inward first, then expand outward.</div>
+        </div>
+      </div>
+      <div class="card col-6">
+        <h3>Ring Rules</h3>
+        <table>
+          <thead><tr><th>Ring</th><th>When It Activates</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Sun / Core</strong></td><td>Always</td><td>Highest conviction and highest attention.</td></tr>
+            <tr><td><strong>Ring 2 / Revenue</strong></td><td>Core ≥ 50%</td><td>Begin meaningful stability building.</td></tr>
+            <tr><td><strong>Ring 3 / Optionality</strong></td><td>Core ≥ 70% and Revenue ≥ 40%</td><td>Add asymmetric upside after inner rings advance.</td></tr>
+            <tr><td><strong>Ring 4 / Stabilizers</strong></td><td>Core ≥ 85%</td><td>Broaden and stabilize after the universe is built properly.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="portfolio" class="panel">
+    <div class="grid">
+      <div class="card col-3"><h3>Portfolio Market Value</h3><div class="stat" id="pfValue">$0.00</div><div class="kicker">Live mark-to-market using quote feed</div></div>
+      <div class="card col-3"><h3>Total Cost Basis</h3><div class="stat" id="pfCost">$0.00</div><div class="kicker">Based on your saved position inputs</div></div>
+      <div class="card col-3"><h3>Total Gain / Loss</h3><div class="stat" id="pfPnL">$0.00</div><div class="kicker" id="pfPnLPct">0.00%</div></div>
+      <div class="card col-3"><h3>Auto Refresh</h3><div class="stat" id="autoRefreshLabel">Off</div><div class="kicker" id="autoRefreshSub">Manual refresh only</div></div>
+
+      <div class="card col-12">
+        <h3>Portfolio Positions</h3>
+        <div class="small" style="margin-bottom:12px">Enter your shares and average cost once. They save in this browser. Current value and gain/loss update when live quotes refresh.</div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ticker</th><th>Company</th><th>Ring</th><th>Shares</th><th>Avg Cost</th><th>Live Price</th><th>Market Value</th><th>Cost Basis</th><th>Gain / Loss</th><th>Gain / Loss %</th>
+              </tr>
+            </thead>
+            <tbody id="portfolioRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="addtrade" class="panel">
+    <div class="grid">
+      <div class="card col-5">
+        <h3>Add Trade</h3>
+        <div class="config">
+          <div>
+            <label>Ticker</label>
+            <select id="tradeTicker" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line2);background:var(--bg2);color:var(--text)"></select>
+          </div>
+          <div>
+            <label>Shares purchased</label>
+            <input id="tradeShares" type="number" min="0" step="1" placeholder="10">
+          </div>
+          <div>
+            <label>Price per share</label>
+            <input id="tradePrice" type="number" min="0" step="0.01" placeholder="68.05">
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <button onclick="addTrade()">Add Trade</button>
+        <button onclick="clearTradeForm()">Clear</button>
+        <div style="height:12px"></div>
+        <div class="note">This updates your total shares, blended average cost, portfolio values, and ring completion automatically.</div>
+      </div>
+
+      <div class="card col-7">
+        <h3>Trade History</h3>
+        <div class="small" style="margin-bottom:12px">Saved in this browser. Delete rows if you need to correct history.</div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date / Time</th><th>Ticker</th><th>Shares</th><th>Price</th><th>Trade Value</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tradeHistoryRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card col-12">
+        <h3>Solar System Completion</h3>
+        <div class="small" style="margin-bottom:12px">Completion is calculated from your current shares compared against target share counts in each ring.</div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ring</th><th>Current Shares</th><th>Target Shares</th><th>Completion %</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ringCompletionRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="heat" class="panel">
+    <div class="card">
+      <h3>Public Heat Map</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Ticker</th><th>Company</th><th>Ring</th><th>Heat</th><th>Action</th><th>Current View</th></tr></thead>
+          <tbody id="heatRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="ladders" class="panel">
+    <div class="grid" id="ladderCards"></div>
+  </section>
+
+  <section id="triggers" class="panel">
+    <div class="grid">
+      <div class="card col-6"><h3>Public Trigger Report</h3><div id="publicTriggers"></div></div>
+      <div class="card col-6"><h3>Private Trigger Report</h3><div id="privateTriggers"></div></div>
+    </div>
+  </section>
+
+  <section id="private" class="panel">
+    <div class="card">
+      <h3>Private Company IPO / Trigger Watch</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Company</th><th>Category</th><th>Score</th><th>Status</th><th>Why It Matters</th></tr></thead>
+          <tbody id="privateTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="ecosystem" class="panel">
+    <div class="card">
+      <h3>Expanded Ecosystem Coverage</h3>
+      <div class="small" style="margin-bottom:12px">This includes additional companies not currently inside the rings, grouped into the categories they belong to so the dashboard can see the whole market, not just the current build targets.</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Category</th><th>Companies</th></tr></thead>
+          <tbody id="ecoRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="live" class="panel">
+    <div class="grid">
+      <div class="card col-6">
+        <h3>Live Refresh Configuration</h3>
+        <div class="config">
+          <div><label>Quote endpoint</label><input id="quoteEndpoint" placeholder="/api/quotes or https://your-domain/api/quotes"></div>
+          <div><label>News endpoint</label><input id="newsEndpoint" placeholder="/api/news or https://your-domain/api/news"></div>
+          <div><label>Universe endpoint (optional)</label><input id="universeEndpoint" placeholder="/api/universe"></div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="note">Best pattern: keep this HTML public, but make refresh call your own backend endpoints. That keeps vendor API keys off the page and gives you one clean place to normalize quotes, news, and triggers.</div>
+      </div>
+      <div class="card col-6">
+        <h3>Expected Response Shapes</h3>
+        <div class="small">
+          <strong>Quotes:</strong><br><span class="code">{ "quotes": { "RKLB": 68.05, "ASTS": 94.90 } }</span><br><br>
+          <strong>News:</strong><br><span class="code">{ "items": [{ "ticker":"RKLB","impact":"High","title":"..." }] }</span><br><br>
+          <strong>Universe (optional):</strong><br><span class="code">{ "ecosystem": { "Launch": [["Rocket Lab","RKLB","Public"]] } }</span>
+        </div>
+        <div style="height:12px"></div>
+        <button onclick="refreshDashboard()">Test Refresh</button>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="settings" class="panel">
+    <div class="grid">
+      <div class="card col-6">
+        <h3>Auto Refresh Settings</h3>
+        <div class="config">
+          <div>
+            <label>Enable auto refresh</label>
+            <select id="autoRefreshEnabled" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line2);background:var(--bg2);color:var(--text)">
+              <option value="false">Off</option>
+              <option value="true">On</option>
+            </select>
+          </div>
+          <div>
+            <label>Refresh interval (seconds)</label>
+            <input id="autoRefreshSeconds" type="number" min="30" step="30" value="300" placeholder="300">
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <button onclick="saveSettings()">Save Settings</button>
+        <button onclick="runAutoRefreshNow()">Refresh Now</button>
+      </div>
+      <div class="card col-6">
+        <h3>How It Works</h3>
+        <div class="small">
+          Auto refresh triggers the same Worker refresh flow as the manual button.<br><br>
+          Recommended intervals:
+          <ul>
+            <li>300 seconds for normal use</li>
+            <li>600 seconds for lighter API usage</li>
+          </ul>
+          If quote providers are rate-limited, the dashboard will keep the last known values and continue refreshing news and universe data.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">Live-ready version with expanded categories and stronger whole-market coverage.</div>
+</div>
+
+<script>
+const DATA = {"meta": {"title": "Investing with SPACE \u2014 Mission Control", "lastUpdated": "April 12, 2026", "mode": "Demo baseline loaded", "recommendedStack": "Static HTML + serverless API proxy"}, "quotes": {"RKLB": 68.05, "ASTS": 94.9, "RDW": 9.29, "IRDM": 34.2, "PL": 34.67, "BKSY": 34.14, "LUNR": 23.57, "VSAT": 56.25, "HON": 235.04, "LMT": 482.11, "NOC": 503.2, "RTX": 141.33, "LHX": 258.77, "GSAT": 3.28, "SPIR": 18.72, "SIDU": 6.44, "MDA": 19.8, "BWXT": 111.25}, "watchCategories": [{"category": "Sun / Core", "companies": ["RKLB", "ASTS", "RDW"]}, {"category": "Ring 2 / Revenue", "companies": ["IRDM", "PL"]}, {"category": "Ring 3 / Optionality", "companies": ["BKSY", "LUNR", "VSAT"]}, {"category": "Ring 4 / Stabilizers", "companies": ["HON", "LMT", "NOC", "RTX", "LHX", "BWXT"]}], "ecosystem": {"Launch": [["RKLB", "Rocket Lab", "Public"], ["SpaceX", "SpaceX", "Private"], ["Blue Origin", "Blue Origin", "Private"], ["Relativity Space", "Relativity Space", "Private"], ["Stoke Space", "Stoke Space", "Private"], ["Firefly Aerospace", "Firefly Aerospace", "Private"], ["ASTR", "Astra", "Public"]], "Communications": [["ASTS", "AST SpaceMobile", "Public"], ["IRDM", "Iridium", "Public"], ["VSAT", "Viasat", "Public"], ["GSAT", "Globalstar", "Public"], ["Kuiper", "Amazon Project Kuiper", "Private/Internal"], ["SATS", "EchoStar", "Public"]], "Data / Earth Observation": [["PL", "Planet Labs", "Public"], ["BKSY", "BlackSky", "Public"], ["SPIR", "Spire Global", "Public"], ["ICEYE", "ICEYE", "Private"], ["Capella", "Capella Space", "Private"], ["Umbra", "Umbra", "Private"], ["Maxar", "Maxar Intelligence", "Private"]], "Infrastructure / Manufacturing": [["RDW", "Redwire", "Public"], ["MDA", "MDA Space", "Public"], ["SIDU", "Sidus Space", "Public"], ["York", "York Space Systems", "Private"], ["Voyager", "Voyager Space / Starlab", "Private"], ["Axiom", "Axiom Space", "Private"], ["Sierra Space", "Sierra Space", "Private"], ["Vast", "Vast", "Private"]], "Lunar / Deep Space": [["LUNR", "Intuitive Machines", "Public"], ["ispace", "ispace", "Public"], ["Astrobotic", "Astrobotic", "Private"], ["Lunar Outpost", "Lunar Outpost", "Private"]], "In-Space Logistics / Servicing": [["Impulse", "Impulse Space", "Private"], ["D-Orbit", "D-Orbit", "Private"], ["Astroscale", "Astroscale", "Private"], ["Orbit Fab", "Orbit Fab", "Private"], ["ClearSpace", "ClearSpace", "Private"], ["Infinite Orbits", "Infinite Orbits", "Private"], ["Turion", "Turion Space", "Private"], ["Momentus", "Momentus", "Public"], ["Atomos", "Atomos Space", "Private/Acquired"]], "Habitat / Life Support / Clothing": [["Axiom", "Axiom Space", "Private"], ["Sierra", "Sierra Space", "Private"], ["ILC Dover", "ILC Dover", "Private"], ["Collins", "Collins Aerospace", "Division"]], "Supply Chain / Stabilizers": [["HON", "Honeywell", "Public"], ["LMT", "Lockheed Martin", "Public"], ["NOC", "Northrop Grumman", "Public"], ["RTX", "RTX", "Public"], ["LHX", "L3Harris", "Public"], ["BWXT", "BWX Technologies", "Public"], ["PH", "Parker Hannifin", "Public"], ["HXL", "Hexcel", "Public"], ["TDY", "Teledyne", "Public"], ["KTOS", "Kratos", "Public"], ["KBR", "KBR", "Public"], ["OII", "Oceaneering", "Public"]], "Downstream / Analytics": [["AAPL", "Apple", "Public"], ["PLTR", "Palantir", "Public"], ["NVDA", "NVIDIA", "Public"], ["Esri", "Esri", "Private"]]}, "heatMap": [["RKLB", "Rocket Lab", "Sun / Core", "yellow", "Wait for dip", "Strong company, but current strength looks extended."], ["ASTS", "AST SpaceMobile", "Sun / Core", "orange", "Be patient", "High-upside setup; better bought on fear than hype."], ["RDW", "Redwire", "Sun / Core", "green", "Accumulate", "Quiet contract strength makes this one of the cleanest builds."], ["IRDM", "Iridium", "Ring 2 / Revenue", "yellow", "Slow build", "Stable anchor, but not urgent."], ["PL", "Planet Labs", "Ring 2 / Revenue", "green", "Build position", "Data layer importance is rising fast."], ["BKSY", "BlackSky", "Ring 3 / Optionality", "green", "Buy dips", "Gov/sovereign contract flow remains supportive."], ["LUNR", "Intuitive Machines", "Ring 3 / Optionality", "green", "Controlled adds", "NASA-backed lunar exposure remains real."], ["VSAT", "Viasat", "Ring 3 / Optionality", "yellow", "Secondary focus", "Useful exposure, but not a lead build."], ["HON", "Honeywell", "Ring 4 / Stabilizers", "blue", "Later phase", "Excellent stabilizer after inner rings are built."]], "buyLadders": {"RKLB": [[68, 35], [60, 45], [52, 50]], "ASTS": [[95, 20], [80, 40], [65, 60]], "RDW": [[9.5, 60], [8.5, 60], [7.5, 70]], "IRDM": [[34, 25], [31, 30], [28, 30]], "PL": [[35, 30], [30, 40], [26, 50]], "BKSY": [[34, 25], [30, 30], [26, 40]], "LUNR": [[24, 20], [20, 30], [17, 40]], "VSAT": [[56, 10], [50, 15], [45, 20]], "HON": [[235, 8], [215, 10], [200, 12]]}, "publicTriggers": [["RKLB", "High", "iQPS multi-launch extension supports backlog quality and cadence."], ["ASTS", "High", "Direct-to-device rollout and launch timing remain the core live catalysts."], ["RDW", "High", "ESA and government program flow keeps infrastructure momentum constructive."], ["PL", "High", "Earth observation relevance rose with national-security workflow ties."], ["BKSY", "High", "Government and sovereign intelligence demand still supports the thesis."], ["LUNR", "High", "NASA contract validation remains a real catalyst base."], ["IRDM", "Medium", "Steady infrastructure setup with more earnings-driven movement."], ["VSAT", "Medium", "Supportive regulatory backdrop, but less urgent than leaders."], ["HON", "Low", "Stable aerospace demand, but this is a later-ring stabilizer."]], "privateTriggers": [["SpaceX", 78, "Very high", "Sector-wide IPO spillover remains a macro catalyst."], ["ICEYE", 78, "High", "One of the strongest private data/defense watch names."], ["Astroscale", 76, "High", "Debris-removal milestones keep it near the top."], ["Impulse Space", 73, "High", "Orbital logistics and defense relevance remain strong."], ["Orbit Fab", 71, "High", "Refueling could become essential infrastructure."], ["Blue Origin", 69, "High", "New Glenn progress matters even with uncertain IPO timing."], ["D-Orbit", 68, "High", "Scaling logistics and mission cadence keep it on alert."], ["Turion Space", 61, "Medium", "Defense and SDA linkages keep it relevant."], ["ClearSpace", 62, "Medium", "Important category, but less immediate than top names."]]};
+
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function findCompany(ticker) {
+  const heat = DATA.heatMap.find(x => x[0]===ticker);
+  if (heat) return heat[1];
+  for (const [cat, items] of Object.entries(DATA.ecosystem)) {
+    for (const item of items) {
+      if (item[0]===ticker || item[1]===ticker) return item[1];
+    }
+  }
+  return ticker;
+}
+
+function renderQuotes() {
+  document.getElementById('quotes').innerHTML = Object.entries(DATA.quotes).map(([ticker, price]) =>
+    '<div class="quote"><div class="ticker">'+ticker+'</div><div class="price">$'+Number(price).toFixed(2)+'</div></div>'
+  ).join('');
+}
+
+function renderRings() {
+  const fills = [
+    'linear-gradient(90deg,#ffcf4d,#f59e0b)',
+    'linear-gradient(90deg,#60a5fa,#2563eb)',
+    'linear-gradient(90deg,#22c55e,#15803d)',
+    'linear-gradient(90deg,#a78bfa,#7c3aed)'
+  ];
+  const badgeClasses = ['badge-yellow','badge-blue','badge-green','badge-purple'];
+  const ringCompletion = getRingCompletionData();
+  document.getElementById('rings').innerHTML = DATA.watchCategories.map((ring, idx) => {
+    const positions = getPositions();
+    const members = ring.companies.map(t => {
+      const company = findCompany(t);
+      const q = DATA.quotes[t] ? '$'+Number(DATA.quotes[t]).toFixed(2) : 'n/a';
+      const owned = Number((positions[t] || {}).shares || 0);
+      const target = Number(TARGET_SHARES[t] || 0);
+      return '<div class="member"><div><strong>'+t+'</strong><span>'+company+'</span></div><div class="small">'+owned+' / '+target+' shares<br>'+q+'</div></div>';
+    }).join('');
+    const rc = ringCompletion[idx];
+    const completion = rc ? Math.min(100, rc.completion) : 0;
+    return '<div class="ring">'
+      + '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><strong>'+ring.category+'</strong><span class="badge '+badgeClasses[idx]+'">'+ring.companies.length+' names</span></div>'
+      + '<div class="progress"><span class="fill" style="width:'+completion+'%;background:'+fills[idx]+'"></span></div>'
+      + '<div class="small">'+completion.toFixed(1)+'% complete</div>'
+      + '<div style="height:8px"></div>'+members+'</div>';
+  }).join('');
+}
+
+function renderHeat() {
+  document.getElementById('heatRows').innerHTML = DATA.heatMap.map(row =>
+    '<tr><td><strong>'+row[0]+'</strong></td><td>'+row[1]+'</td><td>'+row[2]+'</td><td><span class="heat '+row[3]+'">'+row[3].toUpperCase()+'</span></td><td>'+row[4]+'</td><td>'+row[5]+'</td></tr>'
+  ).join('');
+}
+
+function renderLadders() {
+  const cards = [];
+  for (const ticker in DATA.buyLadders) {
+    const steps = DATA.buyLadders[ticker];
+    let inner = '';
+    steps.forEach((s, i) => {
+      inner += '<div class="step"><div>Level '+(i+1)+'</div><div><strong>$'+s[0]+'</strong></div><div>'+s[1]+' shares</div></div>';
+    });
+    cards.push('<div class="card col-4"><h3>'+ticker+' Buy Ladder</h3><div class="small">'+findCompany(ticker)+'</div><div style="height:8px"></div>'+inner+'</div>');
+  }
+  document.getElementById('ladderCards').innerHTML = cards.join('');
+}
+
+function triggerBadge(level) {
+  if (level === 'High' || level === 'Very high') return 'badge-red';
+  if (level === 'Medium') return 'badge-yellow';
+  return 'badge-blue';
+}
+
+function renderTriggers() {
+  document.getElementById('publicTriggers').innerHTML = DATA.publicTriggers.map(t =>
+    '<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)"><div class="badge '+triggerBadge(t[1])+'">'+t[1]+' impact</div><div style="height:8px"></div><strong>'+t[0]+'</strong><div class="small">'+t[2]+'</div></div>'
+  ).join('');
+  document.getElementById('privateTriggers').innerHTML = DATA.privateTriggers.map(t =>
+    '<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)"><div class="badge '+(t[2]==='High' || t[2]==='Very high' ? 'badge-green' : 'badge-yellow')+'">'+t[2]+'</div><div style="height:8px"></div><strong>'+t[0]+' · score '+t[1]+'</strong><div class="small">'+t[3]+'</div></div>'
+  ).join('');
+}
+
+function guessPrivateCategory(name) {
+  const map = {
+    'SpaceX':'Launch + communications', 'ICEYE':'Data / SAR', 'Astroscale':'Debris / servicing', 'Impulse Space':'In-space logistics',
+    'Orbit Fab':'Refueling', 'Blue Origin':'Launch', 'D-Orbit':'In-space logistics', 'Turion Space':'Defense / SDA', 'ClearSpace':'Debris / servicing'
+  };
+  return map[name] || 'Private ecosystem';
+}
+
+function renderPrivate() {
+  document.getElementById('privateTable').innerHTML = DATA.privateTriggers.map(t =>
+    '<tr><td><strong>'+t[0]+'</strong></td><td>'+guessPrivateCategory(t[0])+'</td><td>'+t[1]+'</td><td>'+t[2]+'</td><td>'+t[3]+'</td></tr>'
+  ).join('');
+}
+
+function renderEcosystem() {
+  document.getElementById('ecoRows').innerHTML = Object.entries(DATA.ecosystem).map(([cat, items]) =>
+    '<tr><td><strong>'+cat+'</strong></td><td>'+items.map(x => x[1]+' ('+x[2]+')').join(', ')+'</td></tr>'
+  ).join('');
+}
+
+function saveConfig() {
+  localStorage.setItem('space_quote_endpoint', document.getElementById('quoteEndpoint').value.trim());
+  localStorage.setItem('space_news_endpoint', document.getElementById('newsEndpoint').value.trim());
+  localStorage.setItem('space_universe_endpoint', document.getElementById('universeEndpoint').value.trim());
+  document.getElementById('statusText').textContent = 'Live config saved locally in this browser';
+}
+
+
+
+const TARGET_SHARES = {
+  RKLB: 130,
+  ASTS: 120,
+  RDW: 180,
+  IRDM: 75,
+  PL: 100,
+  BKSY: 85,
+  LUNR: 80,
+  VSAT: 40,
+  HON: 25
+};
+
+const RING_MEMBERS = {
+  "Sun / Core": ["RKLB", "ASTS", "RDW"],
+  "Ring 2 / Revenue": ["IRDM", "PL"],
+  "Ring 3 / Optionality": ["BKSY", "LUNR", "VSAT"],
+  "Ring 4 / Stabilizers": ["HON"]
+};
+
+function getTrades() {
+  try {
+    return JSON.parse(localStorage.getItem('space_trade_history') || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveTrades(trades) {
+  localStorage.setItem('space_trade_history', JSON.stringify(trades));
+}
+
+function rebuildPositionsFromTrades() {
+  const trades = getTrades();
+  const positions = {};
+  Object.keys(TARGET_SHARES).forEach(t => positions[t] = { shares: 0, avgCost: 0 });
+
+  for (const tr of trades) {
+    const ticker = tr.ticker;
+    if (!positions[ticker]) positions[ticker] = { shares: 0, avgCost: 0 };
+    const currentShares = Number(positions[ticker].shares || 0);
+    const currentAvg = Number(positions[ticker].avgCost || 0);
+    const addShares = Number(tr.shares || 0);
+    const addPrice = Number(tr.price || 0);
+    const newShares = currentShares + addShares;
+    const newAvg = newShares > 0 ? ((currentShares * currentAvg) + (addShares * addPrice)) / newShares : 0;
+    positions[ticker] = { shares: newShares, avgCost: Number(newAvg.toFixed(4)) };
+  }
+
+  localStorage.setItem('space_portfolio_positions', JSON.stringify(positions));
+  return positions;
+}
+
+function populateTradeTickerOptions() {
+  const sel = document.getElementById('tradeTicker');
+  if (!sel) return;
+  sel.innerHTML = DATA.heatMap.map(row => `<option value="${row[0]}">${row[0]} — ${row[1]}</option>`).join('');
+}
+
+function clearTradeForm() {
+  const a = document.getElementById('tradeShares');
+  const b = document.getElementById('tradePrice');
+  if (a) a.value = '';
+  if (b) b.value = '';
+}
+
+function addTrade() {
+  const ticker = document.getElementById('tradeTicker')?.value;
+  const shares = Number(document.getElementById('tradeShares')?.value || 0);
+  const price = Number(document.getElementById('tradePrice')?.value || 0);
+
+  if (!ticker || !Number.isFinite(shares) || shares <= 0 || !Number.isFinite(price) || price <= 0) {
+    document.getElementById('statusText').textContent = 'Enter a valid ticker, shares, and price';
+    return;
+  }
+
+  const trades = getTrades();
+  trades.unshift({
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    ticker,
+    shares,
+    price
+  });
+  saveTrades(trades);
+  rebuildPositionsFromTrades();
+  renderTradeHistory();
+  renderPortfolio();
+  renderRingCompletion();
+  renderRings();
+  clearTradeForm();
+  document.getElementById('statusText').textContent = `Added trade for ${ticker}`;
+}
+
+function deleteTrade(id) {
+  const trades = getTrades().filter(t => t.id !== id);
+  saveTrades(trades);
+  rebuildPositionsFromTrades();
+  renderTradeHistory();
+  renderPortfolio();
+  renderRingCompletion();
+  renderRings();
+  document.getElementById('statusText').textContent = 'Trade removed and positions recalculated';
+}
+
+function renderTradeHistory() {
+  const body = document.getElementById('tradeHistoryRows');
+  if (!body) return;
+  const trades = getTrades();
+  body.innerHTML = trades.map(tr => {
+    const dt = new Date(tr.timestamp);
+    const stamp = dt.toLocaleString();
+    const value = Number(tr.shares) * Number(tr.price);
+    return `<tr>
+      <td>${stamp}</td>
+      <td><strong>${tr.ticker}</strong></td>
+      <td>${Number(tr.shares).toLocaleString()}</td>
+      <td>${formatMoney(tr.price)}</td>
+      <td>${formatMoney(value)}</td>
+      <td><button onclick="deleteTrade(${tr.id})">Delete</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="small">No trades added yet.</td></tr>';
+}
+
+function getRingCompletionData() {
+  const positions = getPositions();
+  return Object.entries(RING_MEMBERS).map(([ring, tickers]) => {
+    const currentShares = tickers.reduce((a, t) => a + Number((positions[t] || {}).shares || 0), 0);
+    const targetShares = tickers.reduce((a, t) => a + Number(TARGET_SHARES[t] || 0), 0);
+    const completion = targetShares > 0 ? (currentShares / targetShares) * 100 : 0;
+    let status = 'Building';
+    if (completion >= 100) status = 'Complete';
+    else if (completion >= 70) status = 'Advanced';
+    else if (completion >= 40) status = 'Underway';
+    return { ring, currentShares, targetShares, completion, status };
+  });
+}
+
+function renderRingCompletion() {
+  const body = document.getElementById('ringCompletionRows');
+  if (!body) return;
+  const rows = getRingCompletionData();
+  body.innerHTML = rows.map(r => {
+    const color = r.completion >= 100 ? '#22c55e' : r.completion >= 70 ? '#60a5fa' : r.completion >= 40 ? '#fbbf24' : 'var(--text)';
+    return `<tr>
+      <td><strong>${r.ring}</strong></td>
+      <td>${r.currentShares.toLocaleString()}</td>
+      <td>${r.targetShares.toLocaleString()}</td>
+      <td style="color:${color}">${r.completion.toFixed(1)}%</td>
+      <td style="color:${color}">${r.status}</td>
+    </tr>`;
+  }).join('');
+}
+
+
+const DEFAULT_POSITIONS = {
+  RKLB: { shares: 0, avgCost: 0 },
+  ASTS: { shares: 0, avgCost: 0 },
+  RDW: { shares: 0, avgCost: 0 },
+  IRDM: { shares: 0, avgCost: 0 },
+  PL: { shares: 0, avgCost: 0 },
+  BKSY: { shares: 0, avgCost: 0 },
+  LUNR: { shares: 0, avgCost: 0 },
+  VSAT: { shares: 0, avgCost: 0 },
+  HON: { shares: 0, avgCost: 0 }
+};
+
+let autoRefreshTimer = null;
+
+function getPositions() {
+  const trades = getTrades();
+  if (trades.length) {
+    return rebuildPositionsFromTrades();
+  }
+  try {
+    return Object.assign({}, DEFAULT_POSITIONS, JSON.parse(localStorage.getItem('space_portfolio_positions') || '{}'));
+  } catch (e) {
+    return { ...DEFAULT_POSITIONS };
+  }
+}
+
+function savePositions(positions) {
+  localStorage.setItem('space_portfolio_positions', JSON.stringify(positions));
+}
+
+function updatePositionField(ticker, field, value) {
+  const positions = getPositions();
+  const num = Number(value || 0);
+  if (!positions[ticker]) positions[ticker] = { shares: 0, avgCost: 0 };
+  positions[ticker][field] = Number.isFinite(num) ? num : 0;
+  savePositions(positions);
+  renderPortfolio();
+}
+
+function formatMoney(n) {
+  const num = Number(n || 0);
+  return '$' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderPortfolio() {
+  const body = document.getElementById('portfolioRows');
+  if (!body) return;
+  const positions = getPositions();
+  const rows = DATA.heatMap.map(row => {
+    const ticker = row[0];
+    const company = row[1];
+    const ring = row[2];
+    const pos = positions[ticker] || { shares: 0, avgCost: 0 };
+    const shares = Number(pos.shares || 0);
+    const avgCost = Number(pos.avgCost || 0);
+    const price = Number(DATA.quotes[ticker] || 0);
+    const marketValue = shares * price;
+    const costBasis = shares * avgCost;
+    const pnl = marketValue - costBasis;
+    const pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
+    const pnlColor = pnl > 0 ? '#22c55e' : pnl < 0 ? '#ef4444' : 'var(--text)';
+    return { ticker, company, ring, shares, avgCost, price, marketValue, costBasis, pnl, pnlPct, pnlColor };
+  });
+
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${r.ticker}</strong></td>
+      <td>${r.company}</td>
+      <td>${r.ring}</td>
+      <td><input type="number" min="0" step="1" value="${r.shares}" onchange="updatePositionField('${r.ticker}','shares',this.value)" style="width:90px;padding:6px;border-radius:8px;border:1px solid var(--line2);background:var(--bg2);color:var(--text)"></td>
+      <td><input type="number" min="0" step="0.01" value="${r.avgCost}" onchange="updatePositionField('${r.ticker}','avgCost',this.value)" style="width:100px;padding:6px;border-radius:8px;border:1px solid var(--line2);background:var(--bg2);color:var(--text)"></td>
+      <td>${formatMoney(r.price)}</td>
+      <td>${formatMoney(r.marketValue)}</td>
+      <td>${formatMoney(r.costBasis)}</td>
+      <td style="color:${r.pnlColor}">${formatMoney(r.pnl)}</td>
+      <td style="color:${r.pnlColor}">${r.costBasis > 0 ? r.pnlPct.toFixed(2) + '%' : '0.00%'}</td>
+    </tr>
+  `).join('');
+
+  const totalValue = rows.reduce((a, r) => a + r.marketValue, 0);
+  const totalCost = rows.reduce((a, r) => a + r.costBasis, 0);
+  const totalPnL = totalValue - totalCost;
+  const totalPnLPct = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+
+  document.getElementById('pfValue').textContent = formatMoney(totalValue);
+  document.getElementById('pfCost').textContent = formatMoney(totalCost);
+  const pnlEl = document.getElementById('pfPnL');
+  pnlEl.textContent = formatMoney(totalPnL);
+  pnlEl.style.color = totalPnL > 0 ? '#22c55e' : totalPnL < 0 ? '#ef4444' : 'var(--text)';
+  const pnlPctEl = document.getElementById('pfPnLPct');
+  pnlPctEl.textContent = totalPnLPct.toFixed(2) + '%';
+  pnlPctEl.style.color = pnlEl.style.color;
+}
+
+function saveSettings() {
+  const enabled = document.getElementById('autoRefreshEnabled').value === 'true';
+  const seconds = Math.max(30, Number(document.getElementById('autoRefreshSeconds').value || 300));
+  localStorage.setItem('space_auto_refresh_enabled', String(enabled));
+  localStorage.setItem('space_auto_refresh_seconds', String(seconds));
+  setupAutoRefresh();
+  renderAutoRefreshStatus();
+  document.getElementById('statusText').textContent = 'Settings saved';
+}
+
+function loadSettings() {
+  const enabled = localStorage.getItem('space_auto_refresh_enabled') || 'false';
+  const seconds = localStorage.getItem('space_auto_refresh_seconds') || '300';
+  const enabledEl = document.getElementById('autoRefreshEnabled');
+  const secondsEl = document.getElementById('autoRefreshSeconds');
+  if (enabledEl) enabledEl.value = enabled;
+  if (secondsEl) secondsEl.value = seconds;
+}
+
+function setupAutoRefresh() {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+  }
+  const enabled = (localStorage.getItem('space_auto_refresh_enabled') || 'false') === 'true';
+  const seconds = Math.max(30, Number(localStorage.getItem('space_auto_refresh_seconds') || 300));
+  if (enabled) {
+    autoRefreshTimer = setInterval(() => {
+      refreshDashboard();
+    }, seconds * 1000);
+  }
+}
+
+function renderAutoRefreshStatus() {
+  const enabled = (localStorage.getItem('space_auto_refresh_enabled') || 'false') === 'true';
+  const seconds = Math.max(30, Number(localStorage.getItem('space_auto_refresh_seconds') || 300));
+  const label = document.getElementById('autoRefreshLabel');
+  const sub = document.getElementById('autoRefreshSub');
+  if (label) label.textContent = enabled ? 'On' : 'Off';
+  if (sub) sub.textContent = enabled ? `Every ${seconds} seconds` : 'Manual refresh only';
+}
+
+function runAutoRefreshNow() {
+  refreshDashboard();
+}
+
+
+function loadConfig() {
+  document.getElementById('quoteEndpoint').value = localStorage.getItem('space_quote_endpoint') || '';
+  document.getElementById('newsEndpoint').value = localStorage.getItem('space_news_endpoint') || '';
+  document.getElementById('universeEndpoint').value = localStorage.getItem('space_universe_endpoint') || '';
+}
+
+async function refreshDashboard() {
+  const q = document.getElementById('quoteEndpoint').value.trim();
+  const n = document.getElementById('newsEndpoint').value.trim();
+  const u = document.getElementById('universeEndpoint').value.trim();
+  let touched = false;
+  try {
+    if (q) {
+      const resp = await fetch(q);
+      const json = await resp.json();
+      if (json.quotes) {
+        Object.assign(DATA.quotes, json.quotes);
+        touched = true;
+      }
+    }
+    if (n) {
+      const resp = await fetch(n);
+      const json = await resp.json();
+      if (json.items && Array.isArray(json.items)) {
+        DATA.publicTriggers = json.items.map(i => [i.ticker || 'MARKET', i.impact || 'Medium', i.title || i.detail || '']);
+        touched = true;
+      }
+    }
+    if (u) {
+      const resp = await fetch(u);
+      const json = await resp.json();
+      if (json.ecosystem) {
+        DATA.ecosystem = json.ecosystem;
+        touched = true;
+      }
+    }
+    renderAll();
+    document.getElementById('statusText').textContent = touched ? 'Live data refresh completed' : 'No live endpoints configured — showing baseline data';
+  } catch (err) {
+    console.error(err);
+    document.getElementById('statusText').textContent = 'Refresh failed — still showing baseline data';
+  }
+}
+
+function renderAll() {
+  renderQuotes();
+  renderRings();
+  renderHeat();
+  renderLadders();
+  renderTriggers();
+  renderPrivate();
+  renderEcosystem();
+}
+
+loadConfig();
+renderAll();
+</script>
+</body>
+</html>
