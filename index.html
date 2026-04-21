@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investing with SPACE — Mission Control V3.3</title>
+  <style>
+    :root{
+      --bg:#060913;
+      --bg2:#0a1020;
+      --panel:#0d1528;
+      --panel2:#101b33;
+      --panel3:#13203d;
+      --line:rgba(138,177,255,.18);
+      --line2:rgba(138,177,255,.34);
+      --text:#edf4ff;
+      --muted:#93a7cf;
+      --blue:#67b7ff;
+      --cyan:#63f3ff;
+      --green:#29e07a;
+      --yellow:#ffd166;
+      --orange:#ff9f43;
+      --red:#ff5d73;
+      --purple:#9b7bff;
+      --glow:0 0 24px rgba(99,243,255,.12);
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;padding:0;
+      background:
+      radial-gradient(circle at 20% 0%, rgba(103,183,255,.10), transparent 28%),
+      radial-gradient(circle at 80% 10%, rgba(155,123,255,.10), transparent 24%),
+      radial-gradient(circle at 50% 100%, rgba(99,243,255,.07), transparent 30%),
+      linear-gradient(180deg, #060913 0%, #07101d 100%);
+      color:var(--text);font:14px/1.45 Inter, Segoe UI, Arial, sans-serif
+    }
+    .stars:before,.stars:after{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;
+      background-image:
+        radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(1.5px 1.5px at 32% 77%, rgba(255,255,255,.45), transparent 60%),
+        radial-gradient(2px 2px at 72% 28%, rgba(255,255,255,.5), transparent 60%),
+        radial-gradient(1.5px 1.5px at 80% 66%, rgba(255,255,255,.4), transparent 60%),
+        radial-gradient(1.5px 1.5px at 55% 50%, rgba(255,255,255,.42), transparent 60%),
+        radial-gradient(1.2px 1.2px at 15% 85%, rgba(255,255,255,.4), transparent 60%),
+        radial-gradient(1.2px 1.2px at 92% 12%, rgba(255,255,255,.4), transparent 60%);
+    }
+    .shell{position:relative;z-index:1;max-width:1680px;margin:0 auto;padding:18px}
+    .topbar{
+      display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;
+      padding:16px 18px;border:1px solid var(--line2);border-radius:24px;
+      background:linear-gradient(180deg, rgba(17,28,53,.95), rgba(10,16,32,.95));
+      box-shadow:0 20px 50px rgba(0,0,0,.28), var(--glow);backdrop-filter: blur(10px);
+      margin-bottom:14px;
+    }
+    .title{font-size:30px;font-weight:800;letter-spacing:.02em}
+    .subtitle{color:var(--muted);margin-top:6px}
+    .statusbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .statuspill{
+      display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;
+      border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--text)
+    }
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line2);background:linear-gradient(180deg,var(--panel3),var(--panel2));color:var(--text);cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg,#79c5ff,#4da3ff);color:#08111f;font-weight:800}
+    .tabs{
+      display:flex;gap:8px;flex-wrap:wrap;padding:10px;border:1px solid var(--line);
+      border-radius:18px;background:rgba(9,15,29,.82);margin-bottom:14px
+    }
+    .tab{
+      padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);
+      color:var(--muted);cursor:pointer
+    }
+    .tab.active{background:linear-gradient(180deg,#79c5ff,#4da3ff);color:#07111d;border-color:transparent;font-weight:800}
+    .panel{display:none}
+    .panel.active{display:block}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+    .card{
+      background:linear-gradient(180deg, rgba(18,29,56,.95), rgba(10,16,31,.96));
+      border:1px solid var(--line);border-radius:24px;padding:16px;
+      box-shadow:0 12px 30px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03)
+    }
+    .col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-7{grid-column:span 7}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+    @media(max-width:1100px){.col-3,.col-4,.col-5,.col-6,.col-7,.col-8,.col-12{grid-column:span 12}}
+    .eyebrow{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+    .stat{font-size:34px;font-weight:800;line-height:1}
+    .muted{font-size:12px;color:var(--muted)}
+    .sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+    .sectiontitle{font-size:18px;font-weight:750}
+    .quote-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+    @media(max-width:1200px){.quote-grid{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:760px){.quote-grid{grid-template-columns:repeat(2,1fr)}}
+    .quote{
+      border:1px solid var(--line);border-radius:999px;padding:10px 12px;background:rgba(255,255,255,.03);
+      text-align:center
+    }
+    .quote .t{font-size:11px;color:var(--muted);text-transform:uppercase}
+    .quote .p{font-size:18px;font-weight:800;margin-top:4px}
+    .tablewrap{overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:11px 8px;border-bottom:1px solid rgba(147,167,207,.12);text-align:left;vertical-align:top}
+    th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .num{text-align:right}
+    .badge{
+      display:inline-block;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:800
+    }
+    .bg-green{background:rgba(41,224,122,.14);color:#b9ffcf}
+    .bg-yellow{background:rgba(255,209,102,.14);color:#ffe8ad}
+    .bg-red{background:rgba(255,93,115,.14);color:#ffd2d8}
+    .bg-blue{background:rgba(103,183,255,.14);color:#d8edff}
+    .bg-purple{background:rgba(155,123,255,.14);color:#eadcff}
+    .bg-orange{background:rgba(255,159,67,.14);color:#ffe0c3}
+    .green{color:var(--green)} .yellow{color:var(--yellow)} .red{color:var(--red)} .blue{color:var(--blue)}
+    .tiny{font-size:11px;color:var(--muted)}
+    .orb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media(max-width:980px){.orb-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:620px){.orb-grid{grid-template-columns:1fr}}
+    .orb-wrap{display:flex;justify-content:center}
+    .orb{
+      --p:0; --c:#67b7ff;
+      width:156px;height:156px;border-radius:50%;
+      background:
+        radial-gradient(circle at center, #0f1728 56%, transparent 57%),
+        conic-gradient(var(--c) calc(var(--p)*1%), rgba(255,255,255,.09) 0);
+      border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;
+      box-shadow:inset 0 0 34px rgba(255,255,255,.04), 0 10px 24px rgba(0,0,0,.2), 0 0 22px rgba(103,183,255,.06)
+    }
+    .orb-inner{
+      width:92px;height:92px;border-radius:50%;
+      background:radial-gradient(circle at 30% 20%, rgba(255,255,255,.08), rgba(13,21,40,.98) 58%);
+      display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:8px
+    }
+    .orb .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .orb .pct{font-size:20px;font-weight:800}
+    .orb-meta{margin-top:8px;text-align:center}
+    .ring-map{
+      position:relative;min-height:620px;border-radius:26px;border:1px solid var(--line);
+      background:
+        radial-gradient(circle at center, rgba(103,183,255,.06), transparent 35%),
+        linear-gradient(180deg, rgba(8,14,27,.95), rgba(7,11,21,.98));
+      overflow:hidden;padding:18px
+    }
+    .orbit{
+      position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;
+      border:1px dashed rgba(103,183,255,.18)
+    }
+    .orbit.core{width:170px;height:170px;border-color:rgba(255,209,102,.25)}
+    .orbit.r2{width:290px;height:290px}
+    .orbit.r3{width:410px;height:410px}
+    .orbit.r4{width:530px;height:530px;border-color:rgba(155,123,255,.2)}
+    .sun{
+      position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+      width:108px;height:108px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;flex-direction:column;
+      color:#1b1300;font-weight:900;text-align:center;
+      background:radial-gradient(circle at 35% 30%, #fff4bb, #ffd166 46%, #d89200 78%);
+      box-shadow:0 0 40px rgba(255,209,102,.35)
+    }
+    .ring-band{
+      position:absolute;left:50%;transform:translateX(-50%);
+      width:min(88%,560px);padding:10px 12px;border-radius:18px;border:1px solid var(--line);
+      background:rgba(8,14,27,.78);backdrop-filter:blur(8px)
+    }
+    .ring-band.r2{top:78px}
+    .ring-band.r3{bottom:112px}
+    .ring-band.r4{top:18px}
+    .ring-band h4{margin:0 0 8px 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .chipset{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:12px
+    }
+    .missionbox, .goal-box, .ladder-card, .etf-tile, .ipo-box{
+      border:1px solid var(--line);border-radius:18px;padding:12px;background:rgba(255,255,255,.03);margin-bottom:10px
+    }
+    .missionbox strong,.ipo-box strong{display:block;margin-bottom:6px}
+    .ladder-level{
+      display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(147,167,207,.12)
+    }
+    .ladder-level:first-child{border-top:none}
+    .input, select{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.03);color:var(--text)
+    }
+    .formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    @media(max-width:900px){.formgrid{grid-template-columns:1fr}}
+    .helper{margin-top:8px;color:var(--muted);font-size:12px}
+    .goal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    @media(max-width:900px){.goal-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.goal-grid{grid-template-columns:1fr}}
+    .goal-bar{height:14px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px}
+    .goal-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#79c5ff,#63f3ff)}
+    .ipo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    @media(max-width:900px){.ipo-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="shell">
+  <div class="topbar">
+    <div>
+      <div class="title">Mission Control V3.3</div>
+      <div class="subtitle">Full ecosystem dashboard for the Investing with SPACE thesis, including active IPO candidates and mission sequencing.</div>
+    </div>
+    <div class="statusbar">
+      <div class="statuspill"><span class="dot"></span><span id="statusText">Baseline loaded</span></div>
+      <button class="btn primary" onclick="loadAll()">Refresh Feed</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('overview', this)">Overview</button>
+    <button class="tab" onclick="showPanel('solar', this)">Solar System Map</button>
+    <button class="tab" onclick="showPanel('execution', this)">Execution & Ladders</button>
+    <button class="tab" onclick="showPanel('ipo', this)">IPO Command Center</button>
+    <button class="tab" onclick="showPanel('signals', this)">Signals & Triggers</button>
+    <button class="tab" onclick="showPanel('etf', this)">ETF Layer</button>
+    <button class="tab" onclick="showPanel('live', this)">Live Setup</button>
+  </div>
+
+  <section id="overview" class="panel active">
+    <div class="grid">
+      <div class="card col-6">
+        <div class="eyebrow">Tracked Live Prices</div>
+        <div id="quotes"></div>
+      </div>
+      <div class="card col-3">
+        <div class="eyebrow">Portfolio Value</div>
+        <div class="stat" id="portfolioValue">$0.00</div>
+        <div class="muted">Live mark-to-market</div>
+      </div>
+      <div class="card col-3">
+        <div class="eyebrow">Total Gain / Loss</div>
+        <div class="stat" id="portfolioPnL">$0.00</div>
+        <div class="muted" id="portfolioPnLPct">0.00%</div>
+      </div>
+
+      <div class="card col-12">
+        <div class="sectionhead">
+          <div class="sectiontitle">$1M Mission Tracker</div>
+          <div class="tiny">Goal stays visible, but the system stays in charge.</div>
+        </div>
+        <div id="goalTracker"></div>
+      </div>
+
+      <div class="card col-8">
+        <div class="sectionhead">
+          <div class="sectiontitle">Current Holdings</div>
+          <div class="tiny">Editable correction fields included</div>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ticker</th><th>Ring</th><th>Tier</th><th>Shares</th><th>Avg Cost</th><th>Price</th><th>Value</th><th>P/L</th><th>Signal</th>
+              </tr>
+            </thead>
+            <tbody id="holdingsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card col-4">
+        <div class="sectiontitle">Mission Allocation Engine</div>
+        <div id="allocation"></div>
+        <div class="helper">Core first, Ring 2 second, then outer rings only after unlock thresholds are met.</div>
+      </div>
+
+      <div class="card col-12">
+        <div class="sectiontitle">Ring Completion Snapshot</div>
+        <div class="orb-grid" id="ringSnapshot"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="solar" class="panel">
+    <div class="grid">
+      <div class="card col-12">
+        <div class="sectionhead">
+          <div class="sectiontitle">Dynamic Solar System Map</div>
+          <div class="tiny">Shows public targets, held positions, and watch-only names by current ring.</div>
+        </div>
+        <div class="ring-map">
+          <div class="orbit r4"></div>
+          <div class="orbit r3"></div>
+          <div class="orbit r2"></div>
+          <div class="orbit core"></div>
+          <div class="sun" id="sunCore"></div>
+          <div class="ring-band r4">
+            <h4>Ring 4 — Stabilizers / Support</h4>
+            <div class="chipset" id="solar-r4"></div>
+          </div>
+          <div class="ring-band r2">
+            <h4>Ring 2 — Revenue / Diversified Exposure</h4>
+            <div class="chipset" id="solar-r2"></div>
+          </div>
+          <div class="ring-band r3">
+            <h4>Ring 3 — Optionality</h4>
+            <div class="chipset" id="solar-r3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="execution" class="panel">
+    <div class="grid">
+      <div class="card col-5">
+        <div class="sectiontitle">Add Trade</div>
+        <div class="formgrid">
+          <div><div class="eyebrow">Ticker</div><select id="tradeTicker" class="input"></select></div>
+          <div><div class="eyebrow">Shares</div><input id="tradeShares" class="input" type="number" min="0" step="1" /></div>
+          <div><div class="eyebrow">Price</div><input id="tradePrice" class="input" type="number" min="0" step="0.0001" /></div>
+          <div><div class="eyebrow">Action</div><button class="btn primary" style="width:100%" onclick="addTrade()">Log Trade</button></div>
+        </div>
+        <div class="helper">Trades update holdings, execution tracker, and next-action guidance.</div>
+      </div>
+
+      <div class="card col-7">
+        <div class="sectiontitle">Trade History</div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Date</th><th>Ticker</th><th>Shares</th><th>Price</th><th>Value</th></tr></thead>
+            <tbody id="tradeHistory"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card col-12">
+        <div class="sectiontitle">Execution Tracker</div>
+        <div class="tiny" style="margin-bottom:10px">Tracks the current mission plan and updates remaining shares by level as trades are logged.</div>
+        <div class="grid" id="executionTracker"></div>
+      </div>
+
+      <div class="card col-12">
+        <div class="sectiontitle">Dynamic Buy Ladder Board</div>
+        <div class="grid" id="ladderBoard"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ipo" class="panel">
+    <div class="grid">
+      <div class="card col-12">
+        <div class="sectionhead">
+          <div class="sectiontitle">IPO Command Center</div>
+          <div class="tiny">Verified private watchlist, active de-SPAC / IPO candidates, and future ring suggestions.</div>
+        </div>
+        <div class="ipo-grid" id="ipoActive"></div>
+      </div>
+
+      <div class="card col-12">
+        <div class="sectiontitle">Full Private / IPO Watchlist</div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th><th>Status</th><th>Stage</th><th>Priority</th><th>Projected Ring</th><th>Next Action</th><th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="ipoTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="signals" class="panel">
+    <div class="grid">
+      <div class="card col-5">
+        <div class="sectiontitle">Ring Review</div>
+        <div id="ringReview"></div>
+      </div>
+      <div class="card col-7">
+        <div class="sectiontitle">Probability Shift Alerts</div>
+        <div id="probabilityAlerts"></div>
+      </div>
+      <div class="card col-12">
+        <div class="sectiontitle">Public Triggers</div>
+        <div id="triggers"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="etf" class="panel">
+    <div class="grid">
+      <div class="card col-12">
+        <div class="sectiontitle">ETF Weighting Layer</div>
+        <div class="grid" id="etfLayer"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="live" class="panel">
+    <div class="grid">
+      <div class="card col-8">
+        <div class="sectiontitle">Live Setup</div>
+        <input id="workerUrl" class="input" placeholder="https://space-dashboard-worker.cory-lesley.workers.dev" />
+        <div style="margin-top:10px"><button class="btn" onclick="saveWorkerUrl()">Save Worker URL</button></div>
+      </div>
+      <div class="card col-4">
+        <div class="sectiontitle">Current Worker</div>
+        <div id="workerDisplay" class="muted"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const DEFAULT_API = "https://space-dashboard-worker.cory-lesley.workers.dev";
+
+const universe = {
+  RKLB:{ ring:"core", ringLabel:"Core", tier:"A", company:"Rocket Lab", targetShares:130 },
+  ASTS:{ ring:"core", ringLabel:"Core", tier:"A", company:"AST SpaceMobile", targetShares:120 },
+  RDW:{ ring:"core", ringLabel:"Core", tier:"A", company:"Redwire", targetShares:180 },
+  FLY:{ ring:"core", ringLabel:"Core", tier:"A/B", company:"Firefly Aerospace", targetShares:120 },
+
+  PL:{ ring:"ring2", ringLabel:"Ring 2", tier:"A", company:"Planet Labs", targetShares:120 },
+  IRDM:{ ring:"ring2", ringLabel:"Ring 2", tier:"A", company:"Iridium", targetShares:75 },
+  MARS:{ ring:"ring2", ringLabel:"Ring 2", tier:"B", company:"MARS ETF", targetShares:20, isETF:true },
+  ARKX:{ ring:"ring2", ringLabel:"Ring 2", tier:"B", company:"ARKX ETF", targetShares:0, isETF:true, watchOnly:true },
+  UFO:{ ring:"ring2", ringLabel:"Ring 2", tier:"B", company:"UFO ETF", targetShares:0, isETF:true, watchOnly:true },
+
+  BKSY:{ ring:"ring3", ringLabel:"Ring 3", tier:"A", company:"BlackSky", targetShares:85 },
+  LUNR:{ ring:"ring3", ringLabel:"Ring 3", tier:"A", company:"Intuitive Machines", targetShares:80 },
+  VSAT:{ ring:"ring3", ringLabel:"Ring 3", tier:"A/B", company:"Viasat", targetShares:40 },
+  AERG:{ ring:"ring3", ringLabel:"Ring 3", tier:"B", company:"Applied Energetics", targetShares:25 },
+  SPCE:{ ring:"ring3", ringLabel:"Ring 3", tier:"C", company:"Virgin Galactic", targetShares:25 },
+  SIDU:{ ring:"ring3", ringLabel:"Ring 3", tier:"C", company:"Sidus Space", targetShares:0, watchOnly:true },
+  ASTR:{ ring:"ring3", ringLabel:"Ring 3", tier:"C", company:"Astra", targetShares:0, watchOnly:true },
+
+  HON:{ ring:"ring4", ringLabel:"Ring 4", tier:"A", company:"Honeywell", targetShares:25 },
+  LMT:{ ring:"ring4", ringLabel:"Ring 4", tier:"A", company:"Lockheed Martin", targetShares:10 },
+  NOC:{ ring:"ring4", ringLabel:"Ring 4", tier:"A", company:"Northrop Grumman", targetShares:10 },
+  RTX:{ ring:"ring4", ringLabel:"Ring 4", tier:"A", company:"RTX", targetShares:10 },
+  LHX:{ ring:"ring4", ringLabel:"Ring 4", tier:"A", company:"L3Harris", targetShares:10 },
+  BWXT:{ ring:"ring4", ringLabel:"Ring 4", tier:"A", company:"BWX Technologies", targetShares:10 },
+  KBR:{ ring:"ring4", ringLabel:"Ring 4", tier:"B", company:"KBR", targetShares:15 },
+  NOK:{ ring:"ring4", ringLabel:"Ring 4", tier:"B", company:"Nokia", targetShares:40 },
+  HLIO:{ ring:"ring4", ringLabel:"Ring 4", tier:"B", company:"Helios Technologies", targetShares:20 },
+  VLD:{ ring:"ring4", ringLabel:"Ring 4", tier:"C", company:"Velo3D", targetShares:20 }
+};
+
+const initialPrices = {
+  ASTS:81.00, RKLB:89.46, RDW:10.21, FLY:42.79, PL:37.50, VACI:10.16
+};
+
+const defaultHoldings = {
+  ASTS:{ shares:34, avgCost:85.25 },
+  RKLB:{ shares:18, avgCost:67.4583 },
+  RDW:{ shares:90, avgCost:9.4846 },
+  FLY:{ shares:5, avgCost:44.05 },
+  PL:{ shares:15, avgCost:33.9667 },
+  MARS:{ shares:10, avgCost:29.00 }
+};
+
+const defaultTrades = [
+  { id:1, timestamp:new Date().toISOString(), ticker:"FLY", shares:5, price:44.05 },
+  { id:2, timestamp:new Date().toISOString(), ticker:"ASTS", shares:10, price:77.90 },
+  { id:3, timestamp:new Date().toISOString(), ticker:"ASTS", shares:5, price:87.15 }
+];
+
+const targets = {
+  coreBuild: 40,
+  coreUnlockRing2: 50,
+  ring2Build: 12,
+  ring2UnlockRing3: 18,
+  coreUnlockRing4: 70
+};
+
+const ladders = {
+  ASTS:[{ price:88, target:5, filled:10 },{ price:82, target:10, filled:0 },{ price:78, target:10, filled:10 },{ price:72, target:15, filled:0 }],
+  RKLB:[{ price:72, target:5, filled:0 },{ price:68, target:5, filled:0 },{ price:63, target:5, filled:0 },{ price:58, target:8, filled:0 }],
+  RDW:[{ price:9.75, target:3, filled:0 },{ price:9.00, target:5, filled:0 },{ price:8.25, target:7, filled:0 }],
+  FLY:[{ price:44.05, target:8, filled:5 },{ price:39.60, target:12, filled:0 },{ price:35.20, target:15, filled:0 },{ price:30.80, target:10, filled:0 }],
+  PL:[{ price:33, target:5, filled:0 },{ price:30, target:10, filled:0 },{ price:27, target:15, filled:0 }],
+  IRDM:[{ price:35, target:5, filled:0 },{ price:32, target:8, filled:0 },{ price:29, target:10, filled:0 }]
+};
+
+const executionPlan = {
+  ASTS:{ target:120, levels:[{ price:82, target:10, filled:0 },{ price:78, target:10, filled:10 },{ price:72, target:10, filled:0 }] },
+  RKLB:{ target:130, levels:[{ price:72, target:5, filled:0 },{ price:68, target:5, filled:0 },{ price:63, target:5, filled:0 }] },
+  RDW:{ target:180, levels:[{ price:9.75, target:2, filled:0 },{ price:9.00, target:3, filled:0 },{ price:8.25, target:2, filled:0 }] },
+  FLY:{ target:120, levels:[{ price:44.05, target:8, filled:5 },{ price:39.60, target:5, filled:0 },{ price:35.20, target:5, filled:0 }] }
+};
+
+const ipoWatchlist = [
+  { company:"SpaceX", status:"Private", stage:"Rumor / Confidential filing chatter", priority:"MAX", projectedRing:"Core", nextAction:"Prepare allocation playbook", notes:"Tier S, highest-impact IPO watch" },
+  { company:"NorthStar Earth & Space", status:"Active de-SPAC", stage:"VACI → NSTR expected Q3 2026", priority:"High", projectedRing:"Ring 2", nextAction:"Track VACI now, build post-listing dip ladder", notes:"VACI is current SPAC ticker; expected NYSE ticker NSTR at close" },
+  { company:"Sierra Space", status:"Private", stage:"Private only", priority:"High", projectedRing:"Ring 2", nextAction:"Watch only", notes:"Habitat + logistics + infrastructure" },
+  { company:"Relativity Space", status:"Private", stage:"Private only", priority:"High", projectedRing:"Core / Ring 2", nextAction:"Watch only", notes:"High-risk launch / manufacturing optionality" },
+  { company:"Astranis", status:"Private", stage:"Private only", priority:"High", projectedRing:"Ring 2", nextAction:"Watch only", notes:"Communications satellite revenue model" },
+  { company:"K2 Space", status:"Private", stage:"Private only", priority:"High", projectedRing:"Ring 2", nextAction:"Watch only", notes:"Satellite manufacturing scale play" },
+  { company:"Loft Orbital", status:"Private", stage:"Private only", priority:"High", projectedRing:"Ring 2", nextAction:"Watch only", notes:"Satellite-as-a-service recurring model" },
+  { company:"Impulse Space", status:"Private", stage:"Private only", priority:"High", projectedRing:"Ring 2", nextAction:"Watch only", notes:"Orbital logistics / transport layer" },
+  { company:"NorthStar Earth & Space / Viking", status:"SPAC public", stage:"VACI trading now", priority:"Active", projectedRing:"Ring 2", nextAction:"Do not chase SPAC; wait for de-SPAC + pullback", notes:"Verified current ticker VACI; combined co expected as NSTR" },
+  { company:"Rhea Space Activity", status:"Private", stage:"Private only", priority:"Medium", projectedRing:"Ring 3", nextAction:"Watch only", notes:"Defense analytics / SSA niche optionality" },
+  { company:"Firehawk Aerospace", status:"Private", stage:"Private only", priority:"Medium", projectedRing:"Ring 3", nextAction:"Watch only", notes:"Supply-chain / propulsion layer" },
+  { company:"Databricks", status:"Private", stage:"Private only", priority:"Medium", projectedRing:"Ring 2", nextAction:"Watch only", notes:"AI + space convergence layer" },
+  { company:"Astra", status:"Public turnaround", stage:"Already public / not IPO watch", priority:"Speculative", projectedRing:"Ring 3", nextAction:"Watch only", notes:"Public turnaround watch, not private IPO candidate" }
+];
+
+let prices = { ...initialPrices };
+let triggerItems = [];
+
+function showPanel(id, btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function getWorkerUrl(){ return (localStorage.getItem("space_worker_url") || DEFAULT_API).trim().replace(/\/$/, ""); }
+function saveWorkerUrl(){
+  const value = (document.getElementById("workerUrl").value || DEFAULT_API).trim().replace(/\/$/, "");
+  localStorage.setItem("space_worker_url", value);
+  document.getElementById("statusText").textContent = "Worker URL saved";
+  renderWorkerDisplay();
+}
+function renderWorkerDisplay(){ document.getElementById("workerDisplay").textContent = getWorkerUrl(); }
+
+function getHoldings(){
+  try{ return Object.assign({}, defaultHoldings, JSON.parse(localStorage.getItem("space_v33_holdings") || "{}")); }
+  catch(e){ return { ...defaultHoldings }; }
+}
+function saveHoldings(h){ localStorage.setItem("space_v33_holdings", JSON.stringify(h)); }
+
+function getTrades(){
+  try{
+    const fromStore = JSON.parse(localStorage.getItem("space_v33_trades") || "null");
+    return fromStore || defaultTrades;
+  } catch(e){ return defaultTrades; }
+}
+function saveTrades(t){ localStorage.setItem("space_v33_trades", JSON.stringify(t)); }
+
+function getExecutionState(){
+  try{
+    const saved = JSON.parse(localStorage.getItem("space_v33_execution") || "null");
+    return saved || executionPlan;
+  }catch(e){
+    return executionPlan;
+  }
+}
+function saveExecutionState(state){ localStorage.setItem("space_v33_execution", JSON.stringify(state)); }
+
+function formatMoney(n){ const v = Number(n || 0); return "$" + v.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function formatMaybePrice(n){ return Number.isFinite(Number(n)) && Number(n)>0 ? formatMoney(n) : "n/a"; }
+
+function populateTradeTicker(){
+  const select = document.getElementById("tradeTicker");
+  select.innerHTML = Object.keys(universe)
+    .filter(t => !universe[t].watchOnly)
+    .map(t => `<option value="${t}">${t} — ${universe[t].company}</option>`).join("");
+}
+
+function getPortfolioStats(){
+  const holdings = getHoldings();
+  let totalValue = 0, totalCost = 0;
+  const ringValues = { core:0, ring2:0, ring3:0, ring4:0 };
+  Object.keys(holdings).forEach(t => {
+    const h = holdings[t] || { shares:0, avgCost:0 };
+    const value = Number(h.shares||0) * Number(prices[t]||0);
+    const cost = Number(h.shares||0) * Number(h.avgCost||0);
+    totalValue += value; totalCost += cost;
+    if (universe[t]?.ring) ringValues[universe[t].ring] += value;
+  });
+  return { totalValue, totalCost, totalPnL: totalValue - totalCost, ringValues };
+}
+
+function getMissionState(){
+  const stats = getPortfolioStats();
+  const totalValue = stats.totalValue;
+  const actual = {
+    core: totalValue ? (stats.ringValues.core / totalValue * 100) : 0,
+    ring2: totalValue ? (stats.ringValues.ring2 / totalValue * 100) : 0,
+    ring3: totalValue ? (stats.ringValues.ring3 / totalValue * 100) : 0,
+    ring4: totalValue ? (stats.ringValues.ring4 / totalValue * 100) : 0
+  };
+  const coreReadyForRing2 = actual.core >= targets.coreUnlockRing2;
+  const ring2Established = actual.ring2 >= targets.ring2UnlockRing3;
+  const ring3Unlocked = coreReadyForRing2 && ring2Established;
+  const ring4Unlocked = actual.core >= targets.coreUnlockRing4;
+  return { actual, coreReadyForRing2, ring2Established, ring3Unlocked, ring4Unlocked };
+}
+
+function getSignal(ticker){
+  const price = Number(prices[ticker] || 0);
+  if (!price) return { label:"NO DATA", cls:"bg-blue" };
+  const state = getMissionState();
+  const ring = universe[ticker]?.ring;
+  if ((ring === "ring3" && !state.ring3Unlocked) || (ring === "ring4" && !state.ring4Unlocked)) {
+    return { label:"LOCKED", cls:"bg-red" };
+  }
+  const ladder = ladders[ticker];
+  if (!ladder) return { label:"HOLD", cls:"bg-blue" };
+  const pricesOnly = ladder.map(x => x.price).sort((a,b)=>b-a);
+  const upper = pricesOnly[0];
+  const mid = pricesOnly[Math.min(1, pricesOnly.length-1)];
+  const lower = pricesOnly[Math.min(2, pricesOnly.length-1)];
+  if (price <= lower) return { label:"STRONG BUY", cls:"bg-green" };
+  if (price <= mid) return { label:"BUY", cls:"bg-green" };
+  if (price <= upper) return { label:"LIGHT BUY", cls:"bg-yellow" };
+  return { label:"WAIT", cls:"bg-red" };
+}
+
+async function loadAll(){
+  document.getElementById("statusText").textContent = "Refreshing feed...";
+  await loadPricesAndNews();
+  renderAll();
+}
+
+async function loadPricesAndNews(){
+  const api = getWorkerUrl();
+  document.getElementById("workerUrl").value = api;
+  try{
+    const qRes = await fetch(api + "/quotes");
+    if (qRes.ok){
+      const qData = await qRes.json();
+      prices = Object.assign({}, prices, qData.quotes || {});
+    }
+    const nRes = await fetch(api + "/news");
+    if (nRes.ok){
+      const nData = await nRes.json();
+      triggerItems = nData.items || [];
+    }
+    document.getElementById("statusText").textContent = "Live feed synced";
+  }catch(e){
+    document.getElementById("statusText").textContent = "Refresh failed — using baseline data";
+  }
+}
+
+function calculateAllocation(){
+  const stats = getPortfolioStats();
+  const state = getMissionState();
+  const actual = state.actual;
+  let html = "";
+  html += `<div class="missionbox"><strong>Stage 1 — Build the Sun / Core</strong>
+    Current: ${actual.core.toFixed(1)}% · Initial build target: ${targets.coreBuild}% · Ring 2 unlock: ${targets.coreUnlockRing2}%<br>
+    ${actual.core < targets.coreBuild
+      ? '<span class="red">Primary mission: keep concentrating on Core. Do not shift outward.</span>'
+      : actual.core < targets.coreUnlockRing2
+      ? '<span class="yellow">Core is advancing well. Limited Ring 2 activity is fine, but Core still leads.</span>'
+      : '<span class="green">Core threshold met. Ring 2 is now an active build layer.</span>'}
+  </div>`;
+  html += `<div class="missionbox"><strong>Stage 2 — Controlled Ring 2 Build</strong>
+    Current: ${actual.ring2.toFixed(1)}% · Active build target: ${targets.ring2Build}% · Ring 3 unlock: ${targets.ring2UnlockRing3}%<br>
+    ${!state.coreReadyForRing2
+      ? '<span class="yellow">Ring 2 is support-only until Core reaches its unlock threshold.</span>'
+      : actual.ring2 < targets.ring2Build
+      ? '<span class="blue">Ring 2 is active now. Build this layer without letting it outrank Core.</span>'
+      : actual.ring2 < targets.ring2UnlockRing3
+      ? '<span class="yellow">Ring 2 is forming. Keep building deliberately before shifting to Ring 3.</span>'
+      : '<span class="green">Ring 2 threshold met. Ring 3 is now eligible for controlled expansion.</span>'}
+  </div>`;
+  html += `<div class="missionbox"><strong>Mission Guidance</strong>${actual.core < targets.coreUnlockRing2 ? 'Core still needs most of your attention. Buy weakness, not excitement.' : 'Core is firming. Ring 2 can be built selectively, but do not skip discipline.'}</div>`;
+  document.getElementById("allocation").innerHTML = html;
+  document.getElementById("portfolioValue").textContent = formatMoney(stats.totalValue);
+  document.getElementById("portfolioPnL").textContent = formatMoney(stats.totalPnL);
+  document.getElementById("portfolioPnL").className = "stat " + (stats.totalPnL >= 0 ? "green" : "red");
+  const pct = stats.totalCost > 0 ? (stats.totalPnL / stats.totalCost * 100) : 0;
+  document.getElementById("portfolioPnLPct").textContent = pct.toFixed(2) + "%";
+  document.getElementById("portfolioPnLPct").className = "muted " + (stats.totalPnL >= 0 ? "green" : "red");
+}
+
+function renderGoalTracker(){
+  const stats = getPortfolioStats();
+  const currentValue = stats.totalValue;
+  const goalValue = 1000000;
+  const pctToGoal = goalValue > 0 ? Math.min(100, (currentValue / goalValue) * 100) : 0;
+  const remaining = Math.max(0, goalValue - currentValue);
+  const scenario6mBase = currentValue * 1.15;
+  const scenario1yBase = currentValue * 1.50;
+  const scenario5yBase = currentValue * 4.00;
+  const html = `
+    <div class="goal-grid">
+      <div class="goal-box"><div class="eyebrow">Current Value</div><div class="stat" style="font-size:28px">${formatMoney(currentValue)}</div></div>
+      <div class="goal-box"><div class="eyebrow">Goal Value</div><div class="stat" style="font-size:28px">${formatMoney(goalValue)}</div></div>
+      <div class="goal-box"><div class="eyebrow">Remaining Gap</div><div class="stat" style="font-size:28px">${formatMoney(remaining)}</div></div>
+      <div class="goal-box"><div class="eyebrow">Progress To Goal</div><div class="stat" style="font-size:28px">${pctToGoal.toFixed(2)}%</div></div>
+    </div>
+    <div class="goal-bar"><div class="goal-fill" style="width:${pctToGoal}%"></div></div>
+    <div class="grid" style="margin-top:12px">
+      <div class="col-4"><div class="goal-box"><div class="eyebrow">6 Month Base Case</div><div><strong>${formatMoney(scenario6mBase)}</strong></div><div class="tiny">Illustrative only. Assumes modest appreciation and no new capital added.</div></div></div>
+      <div class="col-4"><div class="goal-box"><div class="eyebrow">1 Year Base Case</div><div><strong>${formatMoney(scenario1yBase)}</strong></div><div class="tiny">Illustrative only. Assumes thesis progress and disciplined execution.</div></div></div>
+      <div class="col-4"><div class="goal-box"><div class="eyebrow">5 Year Base Case</div><div><strong>${formatMoney(scenario5yBase)}</strong></div><div class="tiny">Illustrative only. The real driver remains continued Core building and patience.</div></div></div>
+    </div>
+    <div class="helper"><strong>Mission Reminder:</strong> The $1M goal is the destination. The ladder system, ring discipline, and verified thesis are still the drivers.</div>`;
+  document.getElementById("goalTracker").innerHTML = html;
+}
+
+function renderQuotes(){
+  const tracked = ["ASTS","RKLB","RDW","FLY","PL","IRDM","MARS","VACI","ARKX","UFO","BKSY","LUNR"];
+  document.getElementById("quotes").innerHTML =
+    `<div class="quote-grid">` +
+    tracked.map(t => `<div class="quote"><div class="t">${t}</div><div class="p">${formatMaybePrice(prices[t])}</div></div>`).join("") +
+    `</div>`;
+}
+
+function editHolding(ticker, field, value){
+  const holdings = getHoldings();
+  if (!holdings[ticker]) holdings[ticker] = { shares:0, avgCost:0 };
+  holdings[ticker][field] = Number(value || 0);
+  saveHoldings(holdings);
+  renderAll();
+}
+
+function renderHoldings(){
+  const holdings = getHoldings();
+  const rows = Object.keys(universe).map(t => {
+    const h = holdings[t] || { shares:0, avgCost:0 };
+    if (!h.shares) return "";
+    const price = Number(prices[t] || 0);
+    const value = Number(h.shares || 0) * price;
+    const cost = Number(h.shares || 0) * Number(h.avgCost || 0);
+    const pnl = value - cost;
+    const signal = getSignal(t);
+    return `<tr>
+      <td><div><strong>${t}</strong></div><div class="tiny">${universe[t].company}</div></td>
+      <td>${universe[t].ringLabel}</td>
+      <td>${universe[t].tier}</td>
+      <td><input class="input" style="max-width:90px" type="number" value="${Number(h.shares||0)}" onchange="editHolding('${t}','shares',this.value)"></td>
+      <td><input class="input" style="max-width:110px" type="number" step="0.0001" value="${Number(h.avgCost||0)}" onchange="editHolding('${t}','avgCost',this.value)"></td>
+      <td class="num">${formatMaybePrice(price)}</td>
+      <td class="num">${formatMoney(value)}</td>
+      <td class="num ${pnl >= 0 ? 'green':'red'}">${formatMoney(pnl)}</td>
+      <td><span class="badge ${signal.cls}">${signal.label}</span></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("holdingsTable").innerHTML = rows || `<tr><td colspan="9">No holdings saved yet.</td></tr>`;
+}
+
+function renderRingSnapshot(){
+  const holdings = getHoldings();
+  const mapping = {
+    core:{ label:"Core", color:"#f59e0b" },
+    ring2:{ label:"Ring 2", color:"#2563eb" },
+    ring3:{ label:"Ring 3", color:"#16a34a" },
+    ring4:{ label:"Ring 4", color:"#7c3aed" }
+  };
+  let html = "";
+  for (const key of ["core","ring2","ring3","ring4"]){
+    const names = Object.keys(universe).filter(t => universe[t].ring === key && !universe[t].watchOnly);
+    const current = names.reduce((a,t)=> a + Number((holdings[t]||{}).shares || 0), 0);
+    const target = names.reduce((a,t)=> a + Number(universe[t].targetShares || 0), 0);
+    const pct = target ? Math.min(100, current/target*100) : 0;
+    html += `<div class="orb-wrap"><div><div class="orb" style="--p:${pct};--c:${mapping[key].color}">
+      <div class="orb-inner"><div class="label">${mapping[key].label}</div><div class="pct">${pct.toFixed(0)}%</div></div>
+    </div><div class="orb-meta"><strong>${current}</strong> / ${target} shares</div></div></div>`;
+  }
+  document.getElementById("ringSnapshot").innerHTML = html;
+}
+
+function ringChip(t){
+  const h = getHoldings()[t] || { shares:0 };
+  const mode = h.shares > 0 ? `Owned ${h.shares}` : (universe[t].watchOnly ? "Watch" : "Target");
+  return `<div class="chip"><strong>${t}</strong> · ${universe[t].tier} · ${mode}</div>`;
+}
+function renderSolarSystem(){
+  document.getElementById("solar-r2").innerHTML = Object.keys(universe).filter(t=>universe[t].ring==="ring2").map(ringChip).join("");
+  document.getElementById("solar-r3").innerHTML = Object.keys(universe).filter(t=>universe[t].ring==="ring3").map(ringChip).join("");
+  document.getElementById("solar-r4").innerHTML = Object.keys(universe).filter(t=>universe[t].ring==="ring4").map(ringChip).join("");
+  document.getElementById("sunCore").innerHTML = `<div>SUN</div><div style="font-size:11px;font-weight:700">RKLB · ASTS · RDW · FLY</div>`;
+}
+
+function updateLadder(ticker, sharesBought, priceBought){
+  if (!ladders[ticker]) return;
+  let remaining = sharesBought;
+  ladders[ticker].forEach(level => {
+    if (remaining <= 0) return;
+    if (priceBought <= level.price && level.filled < level.target) {
+      const available = level.target - level.filled;
+      const fill = Math.min(available, remaining);
+      level.filled += fill;
+      remaining -= fill;
+    }
+  });
+}
+function updateExecution(ticker, sharesBought, priceBought){
+  const state = getExecutionState();
+  if (!state[ticker]) return;
+  let remaining = sharesBought;
+  state[ticker].levels.forEach(level => {
+    if (remaining <= 0) return;
+    if (priceBought <= level.price && level.filled < level.target){
+      const available = level.target - level.filled;
+      const fill = Math.min(available, remaining);
+      level.filled += fill;
+      remaining -= fill;
+    }
+  });
+  saveExecutionState(state);
+}
+
+function addTrade(){
+  const ticker = document.getElementById("tradeTicker").value;
+  const shares = Number(document.getElementById("tradeShares").value || 0);
+  const price = Number(document.getElementById("tradePrice").value || 0);
+  if (!ticker || shares <= 0 || price <= 0){
+    document.getElementById("statusText").textContent = "Enter valid trade details";
+    return;
+  }
+  const holdings = getHoldings();
+  const current = holdings[ticker] || { shares:0, avgCost:0 };
+  const newShares = Number(current.shares||0) + shares;
+  const newAvg = (((Number(current.shares||0) * Number(current.avgCost||0)) + (shares * price)) / newShares);
+  holdings[ticker] = { shares:newShares, avgCost:Number(newAvg.toFixed(4)) };
+  saveHoldings(holdings);
+
+  const trades = getTrades();
+  trades.unshift({ id:Date.now(), timestamp:new Date().toISOString(), ticker, shares, price });
+  saveTrades(trades);
+
+  updateLadder(ticker, shares, price);
+  updateExecution(ticker, shares, price);
+
+  document.getElementById("tradeShares").value = "";
+  document.getElementById("tradePrice").value = "";
+  document.getElementById("statusText").textContent = `Trade logged: ${shares} ${ticker} @ ${formatMoney(price)}`;
+  renderAll();
+}
+
+function renderTradeHistory(){
+  const trades = getTrades();
+  document.getElementById("tradeHistory").innerHTML = trades.map(t => `
+    <tr>
+      <td>${new Date(t.timestamp).toLocaleString()}</td>
+      <td><strong>${t.ticker}</strong></td>
+      <td class="num">${Number(t.shares).toLocaleString()}</td>
+      <td class="num">${formatMoney(t.price)}</td>
+      <td class="num">${formatMoney(Number(t.shares) * Number(t.price))}</td>
+    </tr>`).join("");
+}
+
+function nextBuyGoal(ticker){
+  const l = ladders[ticker];
+  if (!l) return "No ladder loaded";
+  for (const level of l){
+    if (level.filled < level.target){
+      const remaining = level.target - level.filled;
+      return `${remaining} shares left at ${formatMoney(level.price)} before moving deeper`;
+    }
+  }
+  return "Ladder complete";
+}
+function ladderReviewNote(ticker){
+  const holdings = getHoldings()[ticker] || { shares:0, avgCost:0 };
+  if (!holdings.shares) return "No change yet — still early in build.";
+  const price = Number(prices[ticker] || 0);
+  if (!price) return "Awaiting live price to review ladder posture.";
+  if (price < holdings.avgCost * 0.9) return "Review suggested — price has moved materially below average cost.";
+  if (price > holdings.avgCost * 1.2) return "Review candidate — price is well above average cost and may justify spacing review.";
+  return "Unchanged — stay with current ladder structure.";
+}
+
+function renderExecutionTracker(){
+  const state = getExecutionState();
+  document.getElementById("executionTracker").innerHTML = Object.keys(state).map(t => {
+    const plan = state[t];
+    const totalFilled = plan.levels.reduce((a,l)=>a+l.filled,0);
+    const totalTarget = plan.levels.reduce((a,l)=>a+l.target,0);
+    const pct = totalTarget ? (totalFilled / totalTarget * 100).toFixed(1) : "0.0";
+    const levels = plan.levels.map((l,i) => {
+      const remaining = Math.max(0, l.target - l.filled);
+      const status = remaining === 0 ? '<span class="green">Complete</span>' : `<span class="yellow">${remaining} left</span>`;
+      return `<div class="ladder-level"><div>Level ${i+1} · ${formatMoney(l.price)}</div><div>${l.filled}/${l.target} · ${status}</div></div>`;
+    }).join("");
+    return `<div class="col-4"><div class="ladder-card">
+      <div class="sectionhead"><div><strong>${t}</strong><div class="tiny">${universe[t].company}</div></div><span class="badge bg-blue">${pct}% of next plan</span></div>
+      <div class="tiny">Current mission target: ${totalTarget} shares · Long-term target: ${plan.target}</div>
+      <div style="margin-top:8px">${levels}</div>
+      <div class="helper"><strong>Next action:</strong> ${nextBuyGoal(t)}</div>
+    </div></div>`;
+  }).join("");
+}
+
+function renderLadderBoard(){
+  document.getElementById("ladderBoard").innerHTML = Object.keys(ladders).map(t => {
+    const holdings = getHoldings()[t] || { shares:0, avgCost:0 };
+    const totalTarget = ladders[t].reduce((a,l)=>a+l.target,0);
+    const owned = Number(holdings.shares || 0);
+    const pct = totalTarget ? (owned / totalTarget * 100) : 0;
+    const signal = getSignal(t);
+    const levels = ladders[t].map((l, i) => {
+      const remaining = Math.max(0, l.target - l.filled);
+      const status = remaining <= 0 ? `<span class="green">Complete</span>` : `<span class="yellow">${remaining} left</span>`;
+      return `<div class="ladder-level"><div>Level ${i+1} · ${formatMoney(l.price)}</div><div>${l.filled}/${l.target} shares · ${status}</div></div>`;
+    }).join("");
+    return `<div class="col-4"><div class="ladder-card">
+      <div class="sectionhead"><div><strong>${t}</strong><div class="tiny">${universe[t].company}</div></div><span class="badge ${signal.cls}">${signal.label}</span></div>
+      <div class="tiny">Owned / Target: <strong>${owned}</strong> / ${totalTarget} · ${pct.toFixed(1)}%</div>
+      <div class="tiny">Avg Cost: ${owned ? formatMoney(holdings.avgCost) : 'n/a'} · Live: ${formatMaybePrice(prices[t])}</div>
+      <div style="margin-top:8px">${levels}</div>
+      <div class="helper"><strong>Next buy goal:</strong> ${nextBuyGoal(t)}</div>
+      <div class="helper"><strong>Ladder review:</strong> ${ladderReviewNote(t)}</div>
+    </div></div>`;
+  }).join("");
+}
+
+function renderIPOCandidates(){
+  const active = ipoWatchlist.filter(x => x.status === "Active de-SPAC" || x.stage.includes("VACI") || x.priority === "MAX").slice(0,4);
+  document.getElementById("ipoActive").innerHTML = active.map(x => {
+    let badgeCls = x.priority === "MAX" ? "bg-orange" : x.status === "Active de-SPAC" ? "bg-green" : "bg-blue";
+    return `<div class="ipo-box">
+      <span class="badge ${badgeCls}">${x.priority}</span>
+      <strong>${x.company}</strong>
+      <div class="tiny">Status: ${x.status}</div>
+      <div class="tiny">Stage: ${x.stage}</div>
+      <div class="tiny">Projected Ring: ${x.projectedRing}</div>
+      <div class="helper"><strong>Next Action:</strong> ${x.nextAction}</div>
+      <div class="tiny">${x.notes}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("ipoTable").innerHTML = ipoWatchlist.map(x => `
+    <tr>
+      <td><strong>${x.company}</strong></td>
+      <td>${x.status}</td>
+      <td>${x.stage}</td>
+      <td>${x.priority}</td>
+      <td>${x.projectedRing}</td>
+      <td>${x.nextAction}</td>
+      <td>${x.notes}</td>
+    </tr>
+  `).join("");
+}
+
+function renderRingReview(){
+  const state = getMissionState();
+  document.getElementById("ringReview").innerHTML =
+    `<div class="missionbox"><strong>Promotion Watch</strong>NorthStar (future Ring 2), PL, and BKSY remain the strongest current promotion-watch names.</div>
+     <div class="missionbox"><strong>Risk Monitoring</strong>ASTS execution updates, FLY early-public volatility, and Ring 3 dilution-sensitive names stay under review.</div>
+     <div class="missionbox"><strong>Control Rule</strong>${state.ring3Unlocked ? 'Ring 3 is unlocked for controlled activity.' : 'Ring 3 remains locked. Build watchlists, not positions.'}</div>`;
+}
+
+function renderProbabilityAlerts(){
+  document.getElementById("probabilityAlerts").innerHTML =
+    `<div class="missionbox"><strong>ASTS</strong>Conditional alert active after wrong-orbit launch event. Watch for correction feasibility updates.</div>
+     <div class="missionbox"><strong>NorthStar / VACI</strong>Probability positive on pipeline relevance. Treat as post-listing dip candidate, not a day-one chase.</div>
+     <div class="missionbox"><strong>SpaceX</strong>High-impact rumor watch continues. No capital action until verified public steps advance.</div>`;
+}
+
+function renderTriggers(){
+  if (!triggerItems.length){
+    document.getElementById("triggers").innerHTML =
+      `<div class="missionbox"><strong>NorthStar</strong>NorthStar is going public via Viking Acquisition Corp. I; VACI is live and combined company is expected to trade as NSTR after closing in Q3 2026.</div>
+       <div class="missionbox"><strong>ASTS</strong>Recent wrong-orbit launch event remains the key execution trigger under review.</div>
+       <div class="missionbox"><strong>Sector</strong>SpaceX IPO chatter and Firefly public-market discovery phase remain important background signals.</div>`;
+    return;
+  }
+  document.getElementById("triggers").innerHTML = triggerItems.slice(0, 12).map(i => {
+    const cls = i.impact === "High" ? "bg-green" : i.impact === "Medium" ? "bg-yellow" : "bg-blue";
+    return `<div class="missionbox"><span class="badge ${cls}">${i.impact || 'Low'}</span>
+      <strong style="margin-left:8px">${i.ticker || 'MARKET'}</strong>
+      <div style="margin-top:6px">${i.title || i.detail || ''}</div></div>`;
+  }).join("");
+}
+
+function renderEtfLayer(){
+  const holdings = getHoldings();
+  const stats = getPortfolioStats();
+  const totalValue = stats.totalValue;
+  const etfs = ["MARS","ARKX","UFO"];
+  document.getElementById("etfLayer").innerHTML = etfs.map(t => {
+    const heldShares = Number((holdings[t] || {}).shares || 0);
+    const avgCost = Number((holdings[t] || {}).avgCost || 0);
+    const value = heldShares * Number(prices[t] || 0);
+    const weight = totalValue ? (value / totalValue * 100) : 0;
+    const mode = heldShares > 0 ? `<span class="badge bg-green">Owned</span>` : `<span class="badge bg-purple">Watch</span>`;
+    return `<div class="col-4"><div class="etf-tile">
+      <div class="sectionhead"><div><strong>${t}</strong><div class="tiny">${universe[t].company}</div></div>${mode}</div>
+      <div class="tiny">Live Price: ${formatMaybePrice(prices[t])}</div>
+      <div class="tiny">Shares: ${heldShares}</div>
+      <div class="tiny">Avg Cost: ${heldShares ? formatMoney(avgCost) : 'n/a'}</div>
+      <div class="tiny">Portfolio Weight: ${weight.toFixed(2)}%</div>
+    </div></div>`;
+  }).join("");
+}
+
+function renderAll(){
+  renderWorkerDisplay();
+  renderQuotes();
+  calculateAllocation();
+  renderGoalTracker();
+  renderHoldings();
+  renderRingSnapshot();
+  renderSolarSystem();
+  populateTradeTicker();
+  renderTradeHistory();
+  renderExecutionTracker();
+  renderLadderBoard();
+  renderIPOCandidates();
+  renderRingReview();
+  renderProbabilityAlerts();
+  renderTriggers();
+  renderEtfLayer();
+}
+
+document.getElementById("workerUrl").value = getWorkerUrl();
+populateTradeTicker();
+loadAll();
+</script>
+</body>
+</html>
